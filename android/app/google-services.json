@@ -1,42 +1,78 @@
 {
   "project_info": {
-    "project_number": "559344566999",
-    "firebase_url": "https://e-vote-a0794.firebaseio.com",
-    "project_id": "e-vote-a0794",
-    "storage_bucket": "e-vote-a0794.appspot.com"
+    "project_number": "858117019676",
+    "project_id": "mvote-e692a",
+    "storage_bucket": "mvote-e692a.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:559344566999:android:cc1585426c19fbe6ee2692",
+        "mobilesdk_app_id": "1:858117019676:android:5fd466e9137303bef3a7d9",
         "android_client_info": {
-          "package_name": "com.acm.evote"
+          "package_name": "com.evote.application"
         }
       },
       "oauth_client": [
         {
-          "client_id": "559344566999-fa4n3vhstdrie5kvao1h6jvfjdh2p1co.apps.googleusercontent.com",
+          "client_id": "858117019676-tq0miq68umn91nsn5ipmo6h3h61ud4s9.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.acm.evote",
-            "certificate_hash": "e308625c1b76967b6d6b97ee53d6cba380117002"
+            "package_name": "com.evote.application",
+            "certificate_hash": "65865985d1f2c74942284aac4e2b35f44af4333b"
           }
         },
         {
-          "client_id": "559344566999-70lolro9nl2tr1g1cgd858lpbkin07hp.apps.googleusercontent.com",
+          "client_id": "858117019676-j9h7f9md31cdaktjvg4j1jkeh7na8rlu.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyD5AAywvVePNfbRdUmv9lvjXn1BxKyRWoE"
+          "current_key": "AIzaSyAvHcCzkjdH6HmuhmPCZUdayvw2qGyiIp0"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "559344566999-70lolro9nl2tr1g1cgd858lpbkin07hp.apps.googleusercontent.com",
+              "client_id": "858117019676-j9h7f9md31cdaktjvg4j1jkeh7na8rlu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:858117019676:android:839c302bdd381d0bf3a7d9",
+        "android_client_info": {
+          "package_name": "thecoolnerd.mvote"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "858117019676-vaa4v77a2jfalgv55luu810ct22qccuu.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "thecoolnerd.mvote",
+            "certificate_hash": "65865985d1f2c74942284aac4e2b35f44af4333b"
+          }
+        },
+        {
+          "client_id": "858117019676-j9h7f9md31cdaktjvg4j1jkeh7na8rlu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvHcCzkjdH6HmuhmPCZUdayvw2qGyiIp0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "858117019676-j9h7f9md31cdaktjvg4j1jkeh7na8rlu.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

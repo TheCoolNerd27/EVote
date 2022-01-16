@@ -1,4 +1,4 @@
-package com.example.e_vote
+package com.evote.application
 
 import io.flutter.embedding.android.FlutterActivity
 

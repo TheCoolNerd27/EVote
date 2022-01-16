@@ -6,7 +6,9 @@ import 'package:e_vote/features/auth/presentation/widgets/create_account_button.
 import 'package:e_vote/features/auth/presentation/widgets/login_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:e_vote/features/ui/screens/admin_screens/admin_dashboard.dart';
+import 'package:e_vote/features/ui/screens/voter_screens/voter_dashboard.dart';
+import 'package:firebase_core/firebase_core.dart';
 //the LoginForm widget is made Stateful so as to handle the TextEditingControllers' state.
 class LoginForm extends StatefulWidget {
   // This instance UserRepository is received/injected from the LoginScreen widget.
@@ -41,6 +43,7 @@ class _LoginFormState extends State<LoginForm> {
 
   @override
   void initState() {
+
     _loginBloc = BlocProvider.of<LoginBloc>(
         context); //The parent class' bloc is used here.
     _emailController.addListener(_onEmailChanged);
@@ -55,6 +58,12 @@ class _LoginFormState extends State<LoginForm> {
       listener: (BuildContext context, LoginState state) {
         //state.isFailure => email, password and failure are True, but submitting and success are false
         if (state.isFailure)
+          // if(_emailController.text=="rohan.ashra27@gmail.com")
+          //   Navigator.push(context,
+          //   MaterialPageRoute(builder:(context)=> AdminDashboard()));
+          // else
+          //   Navigator.push(context,
+          //       MaterialPageRoute(builder:(context)=> VoterDashboard()));
           Scaffold.of(context)
             ..hideCurrentSnackBar()
             ..showSnackBar(

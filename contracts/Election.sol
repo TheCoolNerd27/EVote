@@ -1,41 +1,49 @@
-// SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.5.0;
 
 
 contract Election {
-    //Structure that represents a registered voter in the election
+   
     struct Voter {
         bool isRegistered;
-        bool hasVoted; //Whether or not the voter has voted yet
-        address delegate; // The address of the delegate that the voter has chosen (default to the voter itself)
-        uint256 weight; // Weight of the Voter
-        uint256 voteTowards; //States the candidate's ID to which the voter has voted
+        bool hasVoted;
+        address delegate; 
+        int32 weight; 
+        int32 voteTowards;
     }
-    //Structure that represents a registered candidate in the election
+   
     struct Candidate {
-        uint256 ID; // The unique ID of the candidate
-        string name; // Name of the candidate
-        string proposal; // The proposal/promises of the candidate
+        int32 ID;
+        string name; 
+        string proposal; 
     }
-    mapping(uint => address) private voterID; // VoterID mapped to voter address
-    mapping(address => Voter) private voters; //address of voter mapped to the voter struct - To view all registered voters
-    mapping(uint256 => Candidate) private candidates; // ID of candidate mapped to the candidate struct - To view details of all registered candidates
-    mapping(uint256 => uint256) private voteCount; // ID of the candidate mapped to the votes of the candidate privately
+    mapping(int32 => address) private voterID; 
+    mapping(address => Voter) private voters; 
+    mapping(int32 => Candidate) private candidates; 
+    mapping(int32 => int32) private voteCount; 
 
-    address public admin; // The address of the official/authority conducting the election
+    address public admin; 
 
     enum State {CREATED, ONGOING, CONCLUDED}
-    /*This enum represents the state of the election -
-    CREATED - The election contract has been created, voting has not begun yet
-    ONGOING - The voting has begun and is currently active
-    STOP - The voting period has ended and it is time for counting
-    */
+   
 
-    State  electionState; // A variable of the type enum State to represent the election state
+    State  electionState; 
     string public description;
-    uint256 public candidate_count; // Keeps a count of the registered candidates
-    uint256 public voter_count;
-    //modifier to check if the address is of the admin's as several functions can only be accessed by the admin
+    int32 public candidate_count; 
+    int32 public voter_count;
+    function getCandidateCount () public view returns (int32 candi_count)
+    {
+        return candidate_count;
+    }
+    function getVoterCount () public view returns (int32 votr_count)
+    {
+        return voter_count;
+    }
+    function getDescription ()public view returns (string memory desc)
+    {
+        return description;
+    }
+
+   
     modifier checkAdmin(address owner) {
         require(
             owner == admin,
@@ -85,7 +93,7 @@ contract Election {
     }
 
     //modifier to check if the candidate being voted for is a valid candidate
-    modifier checkIfCandidateValid(uint256 _candidateId) {
+    modifier checkIfCandidateValid(int32 _candidateId) {
         require(
             _candidateId > 0 && _candidateId <= candidate_count,
             "Invalid candidate."
@@ -111,13 +119,13 @@ contract Election {
         _;
     }
 
-    //events to be logged into the blockchain
+    //events to be logged int32o the blockchain
     event AddedAVoter(address voter);
-    event VotedSuccessfully(uint256 candidateId);
+    event VotedSuccessfully(int32 candidateId);
     event DelegatedSuccessfully(address delegate);
     event ElectionStart(State election_state);
     event ElectionEnd(State election_state);
-    event AddedACandidate(uint candidateID, string candidateName, string candidateProposal);
+    event AddedACandidate(int32 candidateID, string candidateName, string candidateProposal);
 
     // Initialization
     constructor(address owner, string memory desc) public {
@@ -177,11 +185,11 @@ contract Election {
     }
 
     // To display candidates
-    function displayCandidate(uint256 _ID)
+    function displayCandidate(int32 _ID)
         public
         view
         returns (
-            uint256 id,
+            int32 id,
             string memory name,
             string memory proposal
         )
@@ -198,12 +206,12 @@ contract Election {
         public
         view
         checkIfComplete
-        returns (string memory name, uint256 id, uint256 votes)
+        returns (string memory name, int32 id, int32 votes)
     {
-        uint256 max;
-        uint256 maxIndex;
+        int32 max;
+        int32 maxIndex;
         string memory winner;
-        for (uint256 i = 1; i <= candidate_count; i++) {
+        for (int32 i = 1; i <= candidate_count; i++) {
             if (voteCount[i] > max) {
                 winner = candidates[i].name;
                 maxIndex = i;
@@ -250,7 +258,7 @@ contract Election {
     }
 
     // to cast the vote
-    function vote(uint256 _ID, address owner)
+    function vote(int32 _ID, address owner)
         public
         checkIfOngoing
         checkIfVoterValid(owner)
@@ -268,29 +276,30 @@ contract Election {
     function endElection(address owner) public checkAdmin(owner) {
         electionState = State.CONCLUDED;
         emit ElectionEnd(electionState);
+        electionState=State.CREATED;
     }
 
     // to display result
-    function showResults(uint256 _ID)
+    function showResults(int32 _ID)
         public
         view
         checkIfComplete
         checkIfCandidateValid(_ID)
         returns (
-            uint256 id,
+            int32 id,
             string memory name,
-            uint256 count
+            int32 count
         )
     {
         return (_ID, candidates[_ID].name, voteCount[_ID]);
     }
 
-    function getVoter(uint ID, address owner)  public view checkAdmin(owner)
+    function getVoter(int32 ID, address owner)  public view checkAdmin(owner)
     returns (
-        uint256 id,
+        int32 id,
         address voterAddress,
         address delegate,
-        uint256 weight
+        int32 weight
     )
     {
         return (
@@ -303,15 +312,15 @@ contract Election {
 
     function voterProfile(address voterAddress) public view 
     returns (
-        uint256 id,
+        int32 id,
         address delegate,
-        uint256 weight,
-        uint256 votedTowards,
+        int32 weight,
+        int32 votedTowards,
         string memory name
         )
     {
          
-        for(uint256 i = 1; i<= voter_count; i++)
+        for(int32 i = 1; i<= voter_count; i++)
         {
             if(voterAddress == voterID[i])
             {
@@ -327,6 +336,3 @@ contract Election {
     }
 
 }
-
-
-tongue enable magic omit gown cricket bitter summer super obtain monkey random

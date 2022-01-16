@@ -4,47 +4,85 @@ import 'package:dio/dio.dart';
 import 'package:e_vote/backend/errors.dart';
 import 'package:e_vote/models/candidate_model.dart';
 import 'package:e_vote/models/voter_model.dart';
+import 'package:flutter/services.dart';
+import 'package:web3dart/web3dart.dart';
+import 'package:http/http.dart';
+
 
 class ElectionDataSource {
-  var dioClient = Dio();
+
   String url =
-      "https://mainnet-api.maticvigil.com/v1.0/contract/0xdaecff888d2c99a072a711168eeed5504e9e8fbc";
-  var httpClient = HttpClient();
-  String adminAddress = "0xb3eb5933e5eb4b4872142cf631a3b0c686e15216";
+      "https://rinkeby.infura.io/v3/62452ae1c08e4c53b0382b6b61ce351b";
+  Client httpClient = Client();
+  String adminAddress = "0xe8AC78dFA2f511047d53EEee716e610651905d38";
+  String privateKey="376f449d992a1347653e775dcdb278c8253503a951934925729abf4b28cef1c5";
+  Web3Client ethClient;
+
+
+  Future<DeployedContract> getContract() async {
+//obtain our smart contract using rootbundle to access our json file
+      ethClient=Web3Client(
+          url,
+          httpClient);
+      print("GetContract()");
+    String abiFile = await rootBundle.loadString("assets/ABI.json");
+
+
+    String contractAddress = "0xf6ea057e2D8E4e79c0cbbd3674daE2A1CA563dEF";
+
+
+    final contract = DeployedContract(ContractAbi.fromJson(abiFile, "Election"),
+        EthereumAddress.fromHex(contractAddress));
+    print(contract);
+    return contract;
+  }
+
   // fetches the address of the admin from the blockchain
   Future<String> getAdmin() async {
-    var response = await dioClient.get(url + "/admin");
-    return response.data["data"][0]["address"];
+
+    return adminAddress;
+  }
+  Future<List<dynamic>> callFunction(String name,List<dynamic> args) async {
+    final contract = await getContract();
+    final function = contract.function(name);
+    final result = await ethClient
+        .call(contract: contract, function: function, params: args);
+    return result;
   }
 
   //Fetches the count of registered candidates in the election
   Future<int> getCandidateCount() async {
-    var response = await dioClient.get(url + "/candidate_count");
-    return response.data["data"][0]["uint256"].toInt();
+    List<dynamic> response = await callFunction("getCandidateCount",[]);
+    return response[0].toInt();
   }
 
   //Fetches the count of regsitered voters in the elction
   Future<int> getVoterCount() async {
-    var response = await dioClient.get(url + "/voter_count");
-    return response.data["data"][0]["uint256"].toInt();
+    List<dynamic> response = await callFunction("getVoterCount",[]);
+    return response[0].toInt();
   }
 
   //Fetches the current state of the election - CREATED, ONGOING or STOPPED
   Future<String> getElectionState() async {
-    var response = await dioClient.get(url + "/checkState");
-    return response.data["data"][0]["state"];
+    List<dynamic> response = await callFunction("checkState",[]);
+    return response[0];
   }
 
   //Fetches a short description of the election
   Future<String> getDescription() async {
-    var response = await dioClient.get(url + "/description");
-    return response.data["data"][0]["string"];
+    List<dynamic> response = await callFunction("getDescription",[]);
+    return response[0];
   }
 
   //Fetches the details of a candidate - ID, Name, Proposal
   Future<Candidate> getCandidate(int id) async {
-    var response = await dioClient.get(url + "/displayCandidate/$id");
-    return Candidate.fromJson(response.data["data"][0]);
+    List<dynamic> response = await callFunction("displayCandidate",[id]);
+    Map<String, dynamic> data={
+      "id":response[0],
+      "name":response[1],
+      "proposal":response[2]
+    };
+    return Candidate.fromJson(data);
   }
 
   //Fetches the details of all the registered candidates
@@ -52,9 +90,15 @@ class ElectionDataSource {
     int count = await getCandidateCount();
     var list = List<int>.generate(count, (index) => index + 1);
     List<Candidate> result = [];
+    
     await Future.wait(list.map((e) async {
-      await dioClient.get(url + '/displayCandidate/$e').then((value) {
-        result.add(Candidate.fromJson(value.data["data"][0]));
+      await callFunction("displayCandidate",[e]).then((value) {
+        Map<String, dynamic> data={
+          "id":value[0],
+          "name":value[1],
+          "proposal":value[2]
+        };
+        result.add(Candidate.fromJson(data));
       });
     }));
     return result;
@@ -62,18 +106,33 @@ class ElectionDataSource {
 
   //Fetches the details of a voter - ID, Address, DelegateAddress and Weight
   Future<Voter> getVoter(int id, String owner) async {
-    var response = await dioClient.get(url + "/getVoter/$id/$adminAddress");
-    return Voter.fromJson(response.data["data"][0]);
+    //var response = await dioClient.get(url + "/getVoter/$id/$adminAddress");
+      var ethAdd=EthereumAddress.fromHex(adminAddress);
+    List<dynamic> response = await callFunction("getVoter",[id,ethAdd]);
+    Map<String, dynamic> data={
+      "id":response[0],
+      "voterAddress":response[1],
+      "weight":response[3],
+      "delegate":response[2]
+    };
+    return Voter.fromJson(data);
   }
 
   //Fetches the details of all voters
   Future<List<Voter>> getAllVoters() async {
     int count = await getVoterCount();
+    var ethAdd=EthereumAddress.fromHex(adminAddress);
     var list = List<int>.generate(count, (index) => index + 1);
     List<Voter> result = [];
     await Future.wait(list.map((e) async {
-      await dioClient.get(url + '/getVoter/$e/$adminAddress').then((value) {
-        result.add(Voter.fromJson(value.data["data"][0]));
+      await callFunction("getVoter",[e,ethAdd]).then((response) {
+        Map<String, dynamic> data={
+          "id":response[0],
+          "voterAddress":response[1],
+          "weight":response[3],
+          "delegate":response[2]
+        };
+        result.add(Voter.fromJson(data));
       });
     }));
     print('hah');
@@ -84,11 +143,17 @@ class ElectionDataSource {
   //Fetches the result of the candidate
   Future<Either<ErrorMessage, Candidate>> showCandidateResult(int id) async {
     try {
-      var response = await dioClient.get(url + "/showResults/$id");
-      return Right(Candidate.result(response.data["data"][0]));
+      //var response = await dioClient.get(url + "/showResults/$id");
+      List<dynamic> response = await callFunction("showResults",[id]);
+      Map<String, dynamic> data={
+        "id":response[0],
+        "name":response[1],
+        "count":response[2]
+      };
+      return Right(Candidate.result(data));
     } catch (e) {
       return Left(ErrorMessage(
-          message: e.response.data["error"]["details"]["message"]));
+          message: "Cannot Process Request"));
     }
   }
 
@@ -100,8 +165,13 @@ class ElectionDataSource {
     var list = List<int>.generate(count, (index) => index + 1);
     List<Candidate> result = [];
     await Future.wait(list.map((e) async {
-      await dioClient.get(url + '/showResults/$e').then((value) {
-        result.add(Candidate.result(value.data["data"][0]));
+      await callFunction("showResults",[e]).then((response) {
+        Map<String, dynamic> data={
+          "id":response[0],
+          "name":response[1],
+          "count":response[2]
+        };
+        result.add(Candidate.result(data));
       });
     }));
     print(result.length);
@@ -111,54 +181,67 @@ class ElectionDataSource {
   //Returns the winner of the election
   Future<Either<ErrorMessage, Candidate>> getWinner() async {
     try {
-      var response = await dioClient.get(url + "/showWinner");
-      return Right(Candidate.winner(response.data["data"][0]));
+      //var response = await dioClient.get(url + "/showWinner");
+      List<dynamic> response = await callFunction("showWinner",[]);
+      Map<String, dynamic> data={
+        "id":response[1],
+        "name":response[0],
+        "count":response[2]
+      };
+      return Right(Candidate.winner(data));
     } catch (e) {
       return Left(ErrorMessage(
-          message: e.response.data["error"]["details"]["message"]));
+          message: "Cannot Process Request-2"));
     }
   }
 
   //Function to register a new candidate
   Future<Either<ErrorMessage, String>> addCandidate(
       String name, String proposal) async {
-    Map<String, dynamic> map = {
-      "_name": name,
-      "_proposal": proposal,
-      "owner": adminAddress
-    };
+    Credentials key = EthPrivateKey.fromHex(privateKey);
+    final contract = await getContract();
+    var func=contract.function("addCandidate");
+
     try {
-      var response = await dioClient.post(url + "/addCandidate",
-          data: map,
-          options: Options(headers: {
-            "X-API-KEY": ["70d56934-be68-4b74-b402-f597cdbd41d9"]
-          }, contentType: Headers.formUrlEncodedContentType));
-      return Right(response.data["data"][0]["txHash"]);
+        var ethAdd=EthereumAddress.fromHex(adminAddress);
+      var response=await ethClient.sendTransaction(
+          key,
+          Transaction.callContract(
+              contract: contract, function: func, parameters: [name,proposal,ethAdd]),
+          chainId: 4);
+
+
+      return Right("Added Candidate");
     } catch (e) {
       return Left(ErrorMessage(
-          message: e.respone.data["error"]["message"]));
+          message: "Cannot Add Candidate"));
     }
   }
 
   //Function to register a new voter
   Future<Either<ErrorMessage, String>> addVoter(String voter) async {
-    Map<String, dynamic> map = {"_voter": voter, "owner": adminAddress};
+    Credentials key = EthPrivateKey.fromHex(privateKey);
+    final contract = await getContract();
+    var func=contract.function("addVoter");
+
     try {
-      var response = await dioClient.post(url + "/addVoter",
-          data: map,
-          options: Options(headers: {
-            "X-API-KEY": ["70d56934-be68-4b74-b402-f597cdbd41d9"]
-          }, contentType: Headers.formUrlEncodedContentType));
-      return Right(response.data["data"][0]["txHash"]);
+        var ethAdd=EthereumAddress.fromHex(adminAddress);
+        var ethVoter=EthereumAddress.fromHex(voter);
+      var response = await ethClient.sendTransaction(
+          key,
+          Transaction.callContract(
+              contract: contract, function: func, parameters: [ethVoter,ethAdd]),
+          chainId: 4);
+      return Right("Added Voter");
+
+
     } catch (e) {
-      if (e.response.data["error"]["message"] == "DataEncodingError")
-        return Left(
-            ErrorMessage(message: "Invalid arguments. Please try again."));
-      else if (voter == adminAddress)
-        return Left(ErrorMessage(message: e.response.data["error"]["message"]));
+        print(e);
+     if (voter == adminAddress)
+        return Left(ErrorMessage(message: "Admin Cannot be Voter"));
       else
         return Left(ErrorMessage(
-            message: e.response.data["error"]["message"]));
+            message: "Cannot Add Voter"));
     }
   }
 
@@ -166,73 +249,115 @@ class ElectionDataSource {
   Future<Either<ErrorMessage, String>> delegateVoter(
       String delegate, String owner) async {
     print(delegate + "   " + owner);
-    Map<String, dynamic> map = {"_delegate": delegate, "owner": owner};
+
+
+    Credentials key = EthPrivateKey.fromHex(privateKey);
+    final contract = await getContract();
+    var func=contract.function("delegateVote");
+
     try {
-      var response = await dioClient.post(url + "/delegateVote",
-          data: map,
-          options: Options(headers: {
-            "X-API-KEY": ["70d56934-be68-4b74-b402-f597cdbd41d9"]
-          }, contentType: Headers.formUrlEncodedContentType));
-      return Right(response.data["data"][0]["txHash"]);
+        var ethowner=EthereumAddress.fromHex(owner);
+        var ethDel=EthereumAddress.fromHex(delegate);
+      var response = await ethClient.sendTransaction(
+          key,
+          Transaction.callContract(
+              contract: contract, function: func, parameters: [ethDel,ethowner]),
+          chainId: 4);
+
+
+      return Right("Delegate Successful");
     } catch (e) {
-      if (e.response.data["error"]["message"] == "DataEncodingError")
         return Left(
             ErrorMessage(message: "Invalid arguments. Please try again."));
-      else
-        return Left(ErrorMessage(message: e.response.data["error"]["message"]));
+
     }
   }
 
   //Function to endElection
   Future<Either<ErrorMessage, String>> endElection() async {
     Map<String, dynamic> map = {"owner": adminAddress};
+    Credentials key = EthPrivateKey.fromHex(privateKey);
+    final contract = await getContract();
+    var func=contract.function("endElection");
+    var ethAdd=EthereumAddress.fromHex(adminAddress);
+
+
     try {
-      var response = await dioClient.post(url + "/endElection",
-          data: map,
-          options: Options(headers: {
-            "X-API-KEY": ["70d56934-be68-4b74-b402-f597cdbd41d9"]
-          }, contentType: Headers.formUrlEncodedContentType));
-      return Right(response.data["data"][0]["txHash"]);
+      var response = await ethClient.sendTransaction(
+          key,
+          Transaction.callContract(
+              contract: contract, function: func, parameters: [ethAdd]),
+          chainId: 4);
+
+
+      return Right("Election Ended!");
     } catch (e) {
-      return Left(ErrorMessage(message: e.response.data["error"]["message"]));
+      return Left(ErrorMessage(message: "Cannot Process Request.Try Again!"));
     }
   }
 
   Future<Either<ErrorMessage, String>> startElection() async {
-    Map<String, dynamic> map = {"owner": adminAddress};
+
+
+
+
     try {
-      var response = await dioClient.post(url + "/startElection",
-          data: map,
-          options: Options(headers: {
-            "X-API-KEY": ["70d56934-be68-4b74-b402-f597cdbd41d9"]
-          }, contentType: Headers.formUrlEncodedContentType));
-      return Right(response.data["data"][0]["txHash"]);
+        Credentials key = EthPrivateKey.fromHex(privateKey);
+        final contract = await getContract();
+        print("Start Elec");
+        var func=contract.function("startElection");
+        var ethAdd=EthereumAddress.fromHex(adminAddress);
+      var response = await ethClient.sendTransaction(
+          key,
+          Transaction.callContract(
+              contract: contract, function: func, parameters: [ethAdd]),
+          fetchChainIdFromNetworkId: true,
+          chainId: null);
+        print("Start Elec-2");
+
+
+      return Right("Election Started!");
     } catch (e) {
-      print(e.response.data["error"]);
-      return Left(ErrorMessage(message: e.response.data["error"]["message"]));
+        print(e);
+      return Left(ErrorMessage(message: "Cannot Process Request.Try Again!"));
     }
+
   }
 
   Future<Either<ErrorMessage, String>> vote(int id, String owner) async {
     Map<String, dynamic> map = {"owner": owner, "_ID": id};
+    Credentials key = EthPrivateKey.fromHex(privateKey);
+    final contract = await getContract();
+    var func=contract.function("vote");
+
+
     try {
-      var response = await dioClient.post(url + "/vote",
-          data: map,
-          options: Options(headers: {
-            "X-API-KEY": ["70d56934-be68-4b74-b402-f597cdbd41d9"]
-          }, contentType: Headers.formUrlEncodedContentType));
-      return Right(response.data["data"][0]["txHash"]);
+        var ethAdd=EthereumAddress.fromHex(adminAddress);
+      var response = await ethClient.sendTransaction(
+          key,
+          Transaction.callContract(
+              contract: contract, function: func, parameters: [ethAdd,id]),
+          chainId: 4);
+
+
+      return Right("Vote Submitted Successfully!");
     } catch (e) {
-      if (e.response.data["error"]["message"] == "DataEncodingError")
-        return Left(
-            ErrorMessage(message: "Invalid arguments. Please try again."));
-      else
-        return Left(ErrorMessage(message: e.response.data["error"]["message"]));
+      return Left(ErrorMessage(message: "Cannot Submit Vote.Try Again!"));
     }
   }
 
   Future<Voter> getVoterProfile(String address) async {
-    var response = await dioClient.get(url + "/voterProfile/$address");
-    return Voter.profileJson(response.data["data"][0], address);
+    //var response = await dioClient.get(url + "/voterProfile/$address");
+     var ethAdd= EthereumAddress.fromHex(address);
+    List<dynamic> response = await callFunction("voterProfile",[ethAdd]);
+    Map<String, dynamic> data={
+      "id":response[0],
+      "votedTowards":response[3],
+      "weight":response[2],
+      "weight":response[2],
+      "delegate":response[1],
+      "name":response[4]
+    };
+    return Voter.profileJson(data, address);
   }
 }

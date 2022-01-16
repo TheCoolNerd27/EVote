@@ -10,9 +10,15 @@ import 'features/auth/presentation/bloc/auth_bloc/auth_states.dart';
 import 'features/auth/presentation/screens/Login_Screen.dart';
 import 'home_screen.dart';
 import 'features/auth/presentation/screens/splash_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-void main() {
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
   runApp(HomePage());
+
 }
 
 class HomePage extends StatefulWidget {
@@ -29,6 +35,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _authBloc = AuthBloc(repository: _userRepository);
     _authBloc.add(AppStarted());
+
   }
 
   @override

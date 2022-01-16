@@ -40,8 +40,8 @@ class _AddCandidateScreenState extends State<AddCandidateScreen> {
                     builder: (context) {
                       return Dialog(
                         child: Container(
-                          height: 300,
-                          width: 300,
+                          height: 350,
+                          width: 350,
                           child: Column(
                             children: <Widget>[
                               Container(

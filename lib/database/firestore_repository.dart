@@ -9,7 +9,7 @@ import 'package:web3dart/crypto.dart';
 import 'package:web3dart/web3dart.dart';
 
 class FirestoreRepository {
-  static final firestoreRepository = Firestore.instance;
+  static final firestoreRepository = FirebaseFirestore.instance;
   /*The collection that will hold all the data of the users is called 'users'.
   Each document under the 'users' collection will reference a user.
   */
@@ -20,7 +20,9 @@ class FirestoreRepository {
   ENSURE that EMAIL IS UNIQUE (If not, add UID field)
   */
   void createNewUser(String email) {
+    print("USER CREATED");
     var privateKey = generateNewPrivateKey(Random.secure());
+
     var uid = ref.add(<String, dynamic>{
       "email": email,
       "address": EthereumAddress.fromPublicKey(privateKeyToPublic(privateKey))
@@ -33,17 +35,20 @@ class FirestoreRepository {
 
   //Function to check whether a user is admin or voter/candidate
   Future<bool> isVoter(String email) async {
+    print("VOTER----->");
     final querySnapshot =
-        await ref.where('email', isEqualTo: email).getDocuments();
-    if (querySnapshot.documents[0].data['admin'] == null ||
-        querySnapshot.documents[0].data['admin'] == false)
+        await ref.where('email', isEqualTo: email).get();
+    var data=querySnapshot.docs[0].data() as Map<String, dynamic>;
+    if (data['admin'] == null ||
+        data['admin'] == false)
       return true;
     else
       return false;
   }
 
   Future<String> getVoterAddress(String email) async {
-    var doc = await ref.where("email", isEqualTo: email).getDocuments();
-    return doc.documents[0].data["address"];
+    var doc = await ref.where("email", isEqualTo: email).get();
+    var dt=doc.docs[0].data() as Map<String, dynamic>;
+    return dt["address"];
   }
 }
