@@ -155,6 +155,7 @@ class _ShowCandidatesState extends State<ShowCandidates> {
                                         ),
                                         onPressed: () {
                                             showDialog(
+                                                context: context,
                                                 builder: (context) {
                                                     return Dialog(
                                                         elevation: 2,

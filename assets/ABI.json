@@ -21,9 +21,9 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "candidateID",
-        "type": "int32"
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -98,9 +98,9 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "candidateId",
-        "type": "int32"
+        "type": "uint256"
       }
     ],
     "name": "VotedSuccessfully",
@@ -172,9 +172,9 @@
     "name": "candidate_count",
     "outputs": [
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "",
-        "type": "int32"
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -235,17 +235,17 @@
     "constant": true,
     "inputs": [
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "_ID",
-        "type": "int32"
+        "type": "uint256"
       }
     ],
     "name": "displayCandidate",
     "outputs": [
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "id",
-        "type": "int32"
+        "type": "uint256"
       },
       {
         "internalType": "string",
@@ -283,9 +283,9 @@
     "name": "getCandidateCount",
     "outputs": [
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "candi_count",
-        "type": "int32"
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -311,9 +311,9 @@
     "constant": true,
     "inputs": [
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "ID",
-        "type": "int32"
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -324,9 +324,9 @@
     "name": "getVoter",
     "outputs": [
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "id",
-        "type": "int32"
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -339,9 +339,9 @@
         "type": "address"
       },
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "weight",
-        "type": "int32"
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -354,9 +354,9 @@
     "name": "getVoterCount",
     "outputs": [
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "votr_count",
-        "type": "int32"
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -367,17 +367,17 @@
     "constant": true,
     "inputs": [
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "_ID",
-        "type": "int32"
+        "type": "uint256"
       }
     ],
     "name": "showResults",
     "outputs": [
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "id",
-        "type": "int32"
+        "type": "uint256"
       },
       {
         "internalType": "string",
@@ -385,9 +385,9 @@
         "type": "string"
       },
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "count",
-        "type": "int32"
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -405,14 +405,14 @@
         "type": "string"
       },
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "id",
-        "type": "int32"
+        "type": "uint256"
       },
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "votes",
-        "type": "int32"
+        "type": "uint256"
       }
     ],
     "payable": false,
@@ -438,9 +438,9 @@
     "constant": false,
     "inputs": [
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "_ID",
-        "type": "int32"
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -466,9 +466,9 @@
     "name": "voterProfile",
     "outputs": [
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "id",
-        "type": "int32"
+        "type": "uint256"
       },
       {
         "internalType": "address",
@@ -476,14 +476,14 @@
         "type": "address"
       },
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "weight",
-        "type": "int32"
+        "type": "uint256"
       },
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "votedTowards",
-        "type": "int32"
+        "type": "uint256"
       },
       {
         "internalType": "string",
@@ -501,9 +501,9 @@
     "name": "voter_count",
     "outputs": [
       {
-        "internalType": "int32",
+        "internalType": "uint256",
         "name": "",
-        "type": "int32"
+        "type": "uint256"
       }
     ],
     "payable": false,

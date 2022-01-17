@@ -28,7 +28,7 @@ class ElectionDataSource {
     String abiFile = await rootBundle.loadString("assets/ABI.json");
 
 
-    String contractAddress = "0xf6ea057e2D8E4e79c0cbbd3674daE2A1CA563dEF";
+    String contractAddress = "0x2478abC3748E3AcAF60286708569C8c561356d54";
 
 
     final contract = DeployedContract(ContractAbi.fromJson(abiFile, "Election"),
@@ -76,9 +76,9 @@ class ElectionDataSource {
 
   //Fetches the details of a candidate - ID, Name, Proposal
   Future<Candidate> getCandidate(int id) async {
-    List<dynamic> response = await callFunction("displayCandidate",[id]);
+    List<dynamic> response = await callFunction("displayCandidate",[BigInt.from(id)]);
     Map<String, dynamic> data={
-      "id":response[0],
+      "id":response[0].toInt(),
       "name":response[1],
       "proposal":response[2]
     };
@@ -90,11 +90,11 @@ class ElectionDataSource {
     int count = await getCandidateCount();
     var list = List<int>.generate(count, (index) => index + 1);
     List<Candidate> result = [];
-    
+    print("THIS=====${count}");
     await Future.wait(list.map((e) async {
-      await callFunction("displayCandidate",[e]).then((value) {
+      await callFunction("displayCandidate",[BigInt.from(e)]).then((value) {
         Map<String, dynamic> data={
-          "id":value[0],
+          "id":e,
           "name":value[1],
           "proposal":value[2]
         };
@@ -108,30 +108,36 @@ class ElectionDataSource {
   Future<Voter> getVoter(int id, String owner) async {
     //var response = await dioClient.get(url + "/getVoter/$id/$adminAddress");
       var ethAdd=EthereumAddress.fromHex(adminAddress);
-    List<dynamic> response = await callFunction("getVoter",[id,ethAdd]);
+    List<dynamic> response = await callFunction("getVoter",[BigInt.from(id),ethAdd]);
     Map<String, dynamic> data={
-      "id":response[0],
-      "voterAddress":response[1],
-      "weight":response[3],
-      "delegate":response[2]
+      "id":response[0].toInt(),
+      "voterAddress":response[1].toString(),
+      "weight":response[3].toInt(),
+      "delegate":response[2].toString()
     };
     return Voter.fromJson(data);
   }
 
   //Fetches the details of all voters
   Future<List<Voter>> getAllVoters() async {
+
     int count = await getVoterCount();
+    print("WHAT=====${count}");
     var ethAdd=EthereumAddress.fromHex(adminAddress);
     var list = List<int>.generate(count, (index) => index + 1);
     List<Voter> result = [];
     await Future.wait(list.map((e) async {
-      await callFunction("getVoter",[e,ethAdd]).then((response) {
+      print("STEP===${e}");
+      BigInt xyz=BigInt.from(e);
+      await callFunction("getVoter",[xyz,ethAdd]).then((response) {
+        print("STEP===2");
         Map<String, dynamic> data={
-          "id":response[0],
-          "voterAddress":response[1],
-          "weight":response[3],
-          "delegate":response[2]
+          "id":response[0].toInt(),
+          "voterAddress":response[1].toString(),
+          "weight":response[3].toInt(),
+          "delegate":response[2].toString()
         };
+        print("HERE=====>");
         result.add(Voter.fromJson(data));
       });
     }));
@@ -144,11 +150,11 @@ class ElectionDataSource {
   Future<Either<ErrorMessage, Candidate>> showCandidateResult(int id) async {
     try {
       //var response = await dioClient.get(url + "/showResults/$id");
-      List<dynamic> response = await callFunction("showResults",[id]);
+      List<dynamic> response = await callFunction("showResults",[BigInt.from(id)]);
       Map<String, dynamic> data={
-        "id":response[0],
+        "id":response[0].toInt(),
         "name":response[1],
-        "count":response[2]
+        "count":response[2].toInt()
       };
       return Right(Candidate.result(data));
     } catch (e) {
@@ -165,11 +171,11 @@ class ElectionDataSource {
     var list = List<int>.generate(count, (index) => index + 1);
     List<Candidate> result = [];
     await Future.wait(list.map((e) async {
-      await callFunction("showResults",[e]).then((response) {
+      await callFunction("showResults",[BigInt.from(e)]).then((response) {
         Map<String, dynamic> data={
-          "id":response[0],
+          "id":response[0].toInt(),
           "name":response[1],
-          "count":response[2]
+          "count":response[2].toInt()
         };
         result.add(Candidate.result(data));
       });
@@ -239,9 +245,10 @@ class ElectionDataSource {
         print(e);
      if (voter == adminAddress)
         return Left(ErrorMessage(message: "Admin Cannot be Voter"));
-      else
-        return Left(ErrorMessage(
-            message: "Cannot Add Voter"));
+      else {
+        print(e);
+        return Left(ErrorMessage(message: "Cannot Add Voter"));
+      }
     }
   }
 
@@ -332,16 +339,17 @@ class ElectionDataSource {
 
 
     try {
-        var ethAdd=EthereumAddress.fromHex(adminAddress);
+        var ethAdd=EthereumAddress.fromHex(owner);
       var response = await ethClient.sendTransaction(
           key,
           Transaction.callContract(
-              contract: contract, function: func, parameters: [ethAdd,id]),
+              contract: contract, function: func, parameters: [BigInt.from(id),ethAdd]),
           chainId: 4);
 
 
       return Right("Vote Submitted Successfully!");
     } catch (e) {
+      print(e);
       return Left(ErrorMessage(message: "Cannot Submit Vote.Try Again!"));
     }
   }
@@ -351,11 +359,10 @@ class ElectionDataSource {
      var ethAdd= EthereumAddress.fromHex(address);
     List<dynamic> response = await callFunction("voterProfile",[ethAdd]);
     Map<String, dynamic> data={
-      "id":response[0],
-      "votedTowards":response[3],
-      "weight":response[2],
-      "weight":response[2],
-      "delegate":response[1],
+      "id":response[0].toInt(),
+      "votedTowards":response[3].toInt(),
+      "weight":response[2].toInt(),
+      "delegate":response[1].toString(),
       "name":response[4]
     };
     return Voter.profileJson(data, address);
